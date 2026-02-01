@@ -1,0 +1,2 @@
+# This file keeps the uploads folder in git
+# The folder itself is needed but we don't want to commit uploaded files
