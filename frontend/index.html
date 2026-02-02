@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Assistant</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Main container for the app -->
+    <div class="container">
+        <!-- Header section -->
+        <h1>📚 AI Study Assistant</h1>
+        <p class="subtitle">Upload your study notes and get an AI-powered summary</p>
+        
+        <!-- Upload section -->
+        <div class="upload-section">
+            <!-- File input - accepts PDF, Word, PowerPoint, and Text files -->
+            <input 
+                type="file" 
+                id="fileInput" 
+                accept=".pdf,.docx,.pptx,.txt"
+                class="file-input"
+            />
+            
+            <!-- Label shows selected file name -->
+            <label for="fileInput" class="file-label" id="fileLabel">
+                Choose a file (PDF, Word, PowerPoint, or Text)
+            </label>
+            
+            <!-- Generate button -->
+            <button id="generateButton" class="generate-btn" disabled>
+                Generate Summary
+            </button>
+        </div>
+        
+        <!-- Loading indicator (hidden by default) -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Analyzing your notes...</p>
+        </div>
+        
+        <!-- Result section (hidden by default) -->
+        <div id="result" class="result hidden">
+            <h2>Summary</h2>
+            <div id="summaryContent"></div>
+            
+            <!-- Stats about the summary -->
+            <div class="stats">
+                <span id="originalLength"></span>
+                <span id="summaryLength"></span>
+            </div>
+        </div>
+        
+        <!-- Error message (hidden by default) -->
+        <div id="error" class="error hidden"></div>
+    </div>
+    
+    <!-- Link to external JavaScript file -->
+    <script src="app.js"></script>
+</body>
+</html>
