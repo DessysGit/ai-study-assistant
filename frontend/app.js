@@ -183,20 +183,3 @@ function hideAll() {
     result.classList.add('hidden');
     errorDiv.classList.add('hidden');
 }
-
-// ==================================================
-// THAT'S IT! 
-// ==================================================
-// The app is now fully functional!
-// 
-// HOW IT WORKS:
-// 1. User selects a file → File name appears, button enables
-// 2. User clicks button → File gets sent to backend
-// 3. Loading spinner shows → Backend processes the file
-// 4. Backend sends back summary → We display it nicely
-// 5. If error occurs → We show error message
-//
-// FLOW DIAGRAM:
-// User selects file → change event → Update UI
-// User clicks button → click event → Upload file
-// Backend processes → Returns response → Show result

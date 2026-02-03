@@ -2,7 +2,6 @@
 // AI STUDY ASSISTANT - MAIN SERVER FILE
 // ============================================
 // This file sets up the Express server and handles all the routes
-// Think of it as the "brain" that receives requests and sends responses
 
 // STEP 1: Import all the packages we need
 // ----------------------------------------
@@ -36,7 +35,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // STEP 5: Middleware Setup
 // -------------------------
-// Middleware = functions that process requests before they reach your routes
+// Middleware = functions that process requests before they reach routes
 
 app.use(cors());                    // Allow cross-origin requests (frontend can talk to backend)
 app.use(express.json());            // Parse JSON data in request body
@@ -248,7 +247,7 @@ app.post('/api/summarize', upload.single('file'), async (req, res) => {
     console.log('Text extracted, length:', extractedText.length, 'characters');
     
     // STEP 2: Send text to Gemini AI for summarization
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     
     // Create a prompt for the AI
     const prompt = `You are a helpful study assistant. Please provide a clear, concise summary of the following study notes. Focus on the main concepts, key points, and important details. Format the summary with bullet points for easy reading.
@@ -304,13 +303,6 @@ Summary:`;
 // STEP 9: Start Server
 // --------------------
 app.listen(PORT, () => {
-  console.log('==========================================');
   console.log('🚀 AI Study Assistant Server Started!');
-  console.log('==========================================');
-  console.log(`📡 Server running on: http://localhost:${PORT}`);
-  console.log(`📂 Upload folder: ${path.join(__dirname, 'uploads')}`);
-  console.log(`🤖 AI Model: Gemini Pro`);
-  console.log('==========================================');
   console.log('Ready to help students study! 📚✨');
-  console.log('==========================================\n');
 });
