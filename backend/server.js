@@ -3,7 +3,7 @@
 // ============================================
 // This file sets up the Express server and handles all the routes
 
-// STEP 1: Import all the packages we need
+// Import all the packages we need
 // ----------------------------------------
 const express = require('express');           // Web server framework
 const cors = require('cors');                 // Allows frontend to communicate with backend
@@ -18,22 +18,22 @@ const pdfParse = require('pdf-parse');        // Reads PDF files
 const mammoth = require('mammoth');           // Reads Word (.docx) files
 const officeParser = require('officeparser'); // Reads PowerPoint (.pptx) files
 
-// STEP 2: Load environment variables
+// Load environment variables
 // -----------------------------------
 // This loads the API key from .env file so we don't expose it in code
 dotenv.config();
 
-// STEP 3: Create Express app
+// Create Express app
 // ---------------------------
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// STEP 4: Initialize Gemini AI
+// Initialize Gemini AI
 // -----------------------------
 // This creates a connection to Google's AI using your API key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// STEP 5: Middleware Setup
+// Middleware Setup
 // -------------------------
 // Middleware = functions that process requests before they reach routes
 
@@ -41,7 +41,7 @@ app.use(cors());                    // Allow cross-origin requests (frontend can
 app.use(express.json());            // Parse JSON data in request body
 app.use(express.urlencoded({ extended: true })); // Parse form data
 
-// STEP 6: Configure File Upload
+// Configure File Upload
 // ------------------------------
 // This tells multer where to save uploaded files and what to name them
 
@@ -92,7 +92,7 @@ const upload = multer({
   }
 });
 
-// STEP 7: Helper Functions
+// Helper Functions
 // -------------------------
 // These functions help us read different file types and extract text
 
@@ -193,7 +193,7 @@ async function extractTextFromFile(filePath) {
   }
 }
 
-// STEP 8: API Routes
+// API Routes
 // ------------------
 // These are the endpoints that the frontend will call
 
@@ -207,7 +207,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: 'GET /',
       summarize: 'POST /api/summarize',
-      quiz: 'POST /api/generate-quiz (coming soon)'
+      chat: 'POST /api/chat'
     }
   });
 });
@@ -300,7 +300,81 @@ Summary:`;
   }
 });
 
-// STEP 9: Start Server
+// Routes to chat notes
+app.post('/api/chat', async (req, res) => {
+  try {
+    // VALIDATION: Check if we have both noteText and question
+    const { noteText, question } = req.body;
+  
+  if (!NodeListText || !question) {
+    return res.status(400).json({
+      success: false,
+      error: 'Both noteText and question are required.'
+    });
+  }
+
+  // Check if question is not empty
+  if (question.trim().length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'Question cannot be empty.'
+    });
+  }
+
+  console.log("Chat request received");
+  console.log('Question:', question);
+  console.log('Note text length:', noteText.length, 'characters');
+
+  // STEP 1: Send question and context to Gemini AI
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash"});
+
+  // Create a prompt that includes the notes as context
+  const prompt = `You are a helpful study assistant. A student has uploaded their study notes and has a question about them.
+
+Study Notes:
+${noteText}
+
+Student's Question:
+${question}
+
+Instructios:
+- Answer the questions based only on the information in the study notes above
+- If the answer is not in the notes, "I dont see that information in your notes, but..." and provide general help
+- Be clear, concise and educational
+- Use examples from the note when relevant
+- Format your response for easy reading
+
+Answer:`;
+
+  // Generate answer using AI
+  console.log('Generating answer with Gemini AI...');
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const answer = response.text();
+
+  console.log('Answer generated successfully!');
+
+  // STEP 2: Send response to frontend
+  res.json({
+    success: true,
+    data: {
+      question: question,
+      answer: answer
+    }
+  });
+
+} catch (error) {
+  console.error('Error in /api/chat:', error)
+
+  // Send error request
+  res.status(500).json({
+    success: false,
+    error: error.message || 'An error occurred while processing your question'
+  });
+}
+});
+
+// Start Server
 // --------------------
 app.listen(PORT, () => {
   console.log('🚀 AI Study Assistant Server Started!');
