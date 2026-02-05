@@ -51,8 +51,34 @@
                 <span id="originalLength"></span>
                 <span id="summaryLength"></span>
             </div>
+
+            <!-- Button to start chatting -->
+             <button id="startChatButton" class="chat-start-btn">
+                💬 Ask Questions About These Notes
+             </button>
         </div>
         
+        <!-- Chat Section (hidden by default) -->
+         <div id="chatSection" class="chat-section hidden">
+            <h2>💬 Chat with your notes</h2>
+
+            <!-- Chat message container -->
+             <div id="chatMessages" class="chat-messages">
+                <!-- Messages will appear here dynamically -->
+             </div>
+
+             <!-- Chat input area -->
+              <div class="chat-input-container">
+                <input
+                type="text"
+                id="chatInput"
+                class="chat-input"
+                placeholder="Ask a question about your notes..."
+                />
+                <button id="sendChatButton" class="send-btn">Send</button>
+              </div>
+         </div>
+
         <!-- Error message (hidden by default) -->
         <div id="error" class="error hidden"></div>
     </div>

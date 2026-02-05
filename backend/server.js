@@ -306,7 +306,7 @@ app.post('/api/chat', async (req, res) => {
     // VALIDATION: Check if we have both noteText and question
     const { noteText, question } = req.body;
   
-  if (!NodeListText || !question) {
+  if (!noteText || !question) {
     return res.status(400).json({
       success: false,
       error: 'Both noteText and question are required.'
