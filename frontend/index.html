@@ -22,6 +22,7 @@
                 id="fileInput" 
                 accept=".pdf,.docx,.pptx,.txt"
                 class="file-input"
+                multiple
             />
             
             <!-- Label shows selected file name -->
@@ -56,6 +57,9 @@
              <button id="startChatButton" class="chat-start-btn">
                 💬 Ask Questions About These Notes
              </button>
+
+             <!-- Button to generate quiz -->
+              <button id="generateQuizButton" class="quiz-start-btn">📝 Generate Quiz</button>
         </div>
         
         <!-- Chat Section (hidden by default) -->
@@ -78,6 +82,27 @@
                 <button id="sendChatButton" class="send-btn">Send</button>
               </div>
          </div>
+
+         <!-- Quiz section (hidden by default) -->
+          <div id="quizSection" class="quiz-section hidden">
+            <h2>📝 Quiz Time!</h2>
+
+            <!-- Quiz container -->
+             <div id="quizContainer" class="quiz-container">
+                <!-- Questions will appear here dynamically -->
+             </div>
+
+             <!-- Submit button (hidden until quiz is loaded) -->
+              <button id="submitQuizButton" class="submit-quiz-btn hidden">Submit Quiz</button>
+
+              <!-- Results section (hidden until submited) -->
+               <div id="quizResults" class="quiz-results hidden">
+                    <h3>Quiz Results</h3>
+                    <div id="scoreDisplay" class="score-display"></div>
+                    <div id="answerReview" class="answer-review"></div>
+                    <button id="retakeQuizButton" class="retake-btn">🔄 Retake Quiz</button>
+               </div>
+          </div>
 
         <!-- Error message (hidden by default) -->
         <div id="error" class="error hidden"></div>

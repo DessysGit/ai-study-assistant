@@ -217,21 +217,30 @@ app.get('/', (req, res) => {
  * POST http://localhost:5000/api/summarize
  * Expects: file upload with key 'file'
  */
-app.post('/api/summarize', upload.single('file'), async (req, res) => {
+app.post('/api/summarize', upload.array('files', 10), async (req, res) => {
   try {
-    // VALIDATION: Check if file was uploaded
-    if (!req.file) {
+    // VALIDATION: Check if files were uploaded
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'No file uploaded. Please upload a file.'
+        error: 'No files uploaded. Please upload at least one file.'
       });
     }
     
-    console.log('File uploaded:', req.file.filename);
+    console.log('Files uploaded:', req.files.length);
     
-    // STEP 1: Extract text from uploaded file
-    const filePath = req.file.path;
-    const extractedText = await extractTextFromFile(filePath);
+    // STEP 1: Extract text from ALL uploaded files
+    let combinedText = '';
+    
+    for (const file of req.files) {
+      console.log('Processing:', file.filename);
+      const filePath = file.path;
+      const extractedText = await extractTextFromFile(filePath);
+      
+      // Add file separator
+      combinedText += `\n\n=== ${file.originalname} ===\n\n`;
+      combinedText += extractedText;
+    }
     
     // Check if we got any text
     if (!extractedText || extractedText.trim().length === 0) {
@@ -266,16 +275,19 @@ Summary:`;
     console.log('Summary generated successfully!');
     
     // STEP 3: Clean up - delete the uploaded file
-    await fs.unlink(filePath);
-    console.log('Temporary file deleted');
+    for (const file of req.files) {
+      await fs.unlink(file.path);
+    }
+    console.log('Temporary files deleted');
     
     // STEP 4: Send response to frontend
     res.json({
       success: true,
       data: {
-        filename: req.file.originalname,
+        filename: req.files.map(f => f.originalname).join(', '),
+        filesCount: req.files.length,
         summary: summary,
-        originalLength: extractedText.length,
+        originalLength: combinedText.length,
         summaryLength: summary.length
       }
     });
@@ -283,12 +295,14 @@ Summary:`;
   } catch (error) {
     console.error('Error in /api/summarize:', error);
     
-    // If file was uploaded, delete it
-    if (req.file) {
-      try {
-        await fs.unlink(req.file.path);
-      } catch (unlinkError) {
-        console.error('Error deleting file:', unlinkError);
+    // If files were uploaded, delete them
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        try {
+          await fs.unlink(file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting file:', unlinkError);
+        }
       }
     }
     
@@ -372,6 +386,87 @@ Answer:`;
     error: error.message || 'An error occurred while processing your question'
   });
 }
+});
+
+// Route to generate quiz questions from notes
+app.post('/api/generate-quiz', async (req, res) => {
+  try {
+    // VALIDATION: Check if we have noteText
+    const { noteText } = req.body;
+
+    if (!noteText) {
+      return res.status(400).json({
+        success: false,
+        error: 'noteText is required.'
+      });
+    }
+
+    console.log('Quiz generation request received');
+    console.log('Note text length:', noteText.length, 'characters');
+
+    // Send to Gemini AI to generate quiz
+    const prompt = `You are a helpful study assistant. Generate a nultiple choice quiz based on the following study notes.
+    
+    Study Notes:
+    ${noteText}
+    
+    Instructions:
+    - Generate 5 multiple choice questions that test understanding of the key concepts
+    - Each question should have 4 options (A, B, C, D)
+    - Only ONE option should be correct
+    - Questions should cover different topics from the notes
+    - Make questions challenging but fair
+    
+    IMPORTANT: Respond ONLY with valid JSON in this exact format, no markdown, no code blocks, no extra text:
+    
+    {
+    "questions": [
+      {
+        "question": "What is the main concept?}",
+        "options": ["Option A", "Option B", "Option C", "Option D"],
+        "correctAnswer": 0
+    }
+  ]
+  }
+}
+
+The CorrectAnswer is the index (0, 1, 2, or 3) of the correct option.
+
+Generate the quiz now:`;
+// Generate quiz using AI
+console.log('Generating quiz with Gemini AI...');
+const result = await model.generateContent(prompt);
+const response = await result.response;
+let quizText = response.text();
+
+// Clean up the response - remove markdown code blocks if present
+quizText = quizText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+console.log('Quiz generated, parsing JSON...');
+
+// Parse the JSON
+const quizData = JSON.parse(quizText);
+
+// Validate the quiz structure
+if (!quizData.questions || !Array.isArray(quizData.questions)) {
+  throw new Error('Invalid quiz format received from AI');
+}
+console.log('Quiz generated successfully!', quizData.questions.length, 'questions');
+
+// Send response to frontend
+res.json({
+  success: true,
+  data: quizData
+});
+  } catch (error) {
+    console.error('Error in /api/generate-quiz:', error);
+
+    // Send error message
+    res.status(500).json({
+      success:false,
+      error: error.message || 'An error occurred while generating quiz'
+    });
+  }
 });
 
 // Start Server
