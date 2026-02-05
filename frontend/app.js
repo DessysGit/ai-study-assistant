@@ -16,6 +16,8 @@ const summaryContent = document.getElementById('summaryContent');
 const errorDiv = document.getElementById('error');
 const originalLength = document.getElementById('originalLength');
 const summaryLength = document.getElementById('summaryLength');
+const copyButton = document.getElementById('copyButton');
+const exportButton = document.getElementById('exportButton');
 
 // Chat elements
 const startChatButton = document.getElementById('startChatButton');
@@ -512,6 +514,78 @@ function hideAll() {
     result.classList.add('hidden');
     errorDiv.classList.add('hidden');
 }
+
+// ==================================================
+// EXPORT & COPY FEATURES
+// ==================================================
+
+// Copy summary to clipboard
+copyButton.addEventListener('click', async function() {
+    const summaryText = summaryContent.textContent;
+    
+    if (!summaryText) {
+        showError('No summary to copy!');
+        return;
+    }
+    
+    try {
+        // Use Clipboard API
+        await navigator.clipboard.writeText(summaryText);
+        
+        // Show success feedback
+        const originalText = copyButton.textContent;
+        copyButton.textContent = '✅ Copied!';
+        copyButton.classList.add('copied');
+        
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            copyButton.textContent = originalText;
+            copyButton.classList.remove('copied');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Copy failed:', error);
+        showError('Failed to copy. Please select and copy manually.');
+    }
+});
+
+// Download summary as text file
+exportButton.addEventListener('click', function() {
+    const summaryText = summaryContent.textContent;
+    
+    if (!summaryText) {
+        showError('No summary to download!');
+        return;
+    }
+    
+    // Create a blob (file in memory)
+    const blob = new Blob([summaryText], { type: 'text/plain' });
+    
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    a.download = `study-notes-summary-${timestamp}.txt`;
+    
+    // Trigger download
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Show feedback
+    const originalText = exportButton.textContent;
+    exportButton.textContent = '✅ Downloaded!';
+    
+    setTimeout(() => {
+        exportButton.textContent = originalText;
+    }, 2000);
+});
 
 // IMPORTANT: Make selectOption available globally for onclick handlers
 window.selectOption = selectOption;
