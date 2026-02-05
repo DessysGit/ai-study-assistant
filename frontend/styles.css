@@ -781,6 +781,43 @@ h1 {
     transform: translateY(0);
 }
 
+.print-btn {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    color: white;
+}
+
+.print-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+    }
+    
+    .upload-section,
+    .export-buttons,
+    .chat-start-btn,
+    .quiz-start-btn,
+    .dark-mode-toggle,
+    .chat-section,
+    .quiz-section,
+    button {
+        display: none !important;
+    }
+    
+    .result {
+        background: white;
+    }
+}
+
 /* ============================================
    DARK MODE
    ============================================ */

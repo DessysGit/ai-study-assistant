@@ -588,6 +588,13 @@ exportButton.addEventListener('click', function() {
     }, 2000);
 });
 
+// Print summary
+const printButton = document.getElementById('printButton');
+
+printButton.addEventListener('click', function() {
+    window.print();
+});
+
 // ==================================================
 // DARK MODE TOGGLE
 // ==================================================
