@@ -780,3 +780,125 @@ h1 {
 .export-btn:active {
     transform: translateY(0);
 }
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Dark mode styles */
+body.dark-mode {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+body.dark-mode .container {
+    background: #0f3460;
+    color: #e0e0e0;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode .subtitle,
+body.dark-mode .question-text,
+body.dark-mode .review-question-text {
+    color: #e0e0e0;
+}
+
+body.dark-mode .upload-section,
+body.dark-mode .result,
+body.dark-mode .chat-section,
+body.dark-mode .quiz-section {
+    background: #16213e;
+}
+
+body.dark-mode #summaryContent,
+body.dark-mode .chat-messages,
+body.dark-mode .quiz-container,
+body.dark-mode .quiz-results {
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .file-label {
+    background: #1a1a2e;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+body.dark-mode .file-label:hover {
+    background: #16213e;
+}
+
+body.dark-mode .stats span,
+body.dark-mode .message-sender,
+body.dark-mode .question-number {
+    color: #b0b0b0;
+}
+
+body.dark-mode .message.assistant .message-content {
+    background: #16213e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .chat-input,
+body.dark-mode .quiz-option {
+    background: #1a1a2e;
+    border-color: #3a3a5a;
+    color: #e0e0e0;
+}
+
+body.dark-mode .chat-input:focus {
+    border-color: #667eea;
+}
+
+body.dark-mode .quiz-option:hover {
+    background: #16213e;
+    border-color: #667eea;
+}
+
+body.dark-mode .quiz-question {
+    background: #16213e;
+}
+
+body.dark-mode .dark-mode-toggle {
+    background: #16213e;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .file-list,
+body.dark-mode .file-item {
+    background: #1a1a2e;
+}
+
+body.dark-mode .file-name {
+    color: #e0e0e0;
+}
+
+body.dark-mode .file-size {
+    color: #b0b0b0;
+}

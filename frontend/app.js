@@ -18,6 +18,7 @@ const originalLength = document.getElementById('originalLength');
 const summaryLength = document.getElementById('summaryLength');
 const copyButton = document.getElementById('copyButton');
 const exportButton = document.getElementById('exportButton');
+const darkModeToggle = document.getElementById('darkModeToggle');
 
 // Chat elements
 const startChatButton = document.getElementById('startChatButton');
@@ -585,6 +586,30 @@ exportButton.addEventListener('click', function() {
     setTimeout(() => {
         exportButton.textContent = originalText;
     }, 2000);
+});
+
+// ==================================================
+// DARK MODE TOGGLE
+// ==================================================
+
+// Check if user has dark mode preference saved
+if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+    darkModeToggle.textContent = '☀️';
+}
+
+// Toggle dark mode
+darkModeToggle.addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    
+    // Update button icon
+    if (document.body.classList.contains('dark-mode')) {
+        darkModeToggle.textContent = '☀️';
+        localStorage.setItem('darkMode', 'enabled');
+    } else {
+        darkModeToggle.textContent = '🌙';
+        localStorage.setItem('darkMode', 'disabled');
+    }
 });
 
 // IMPORTANT: Make selectOption available globally for onclick handlers
