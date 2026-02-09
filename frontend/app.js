@@ -22,6 +22,9 @@ const darkModeToggle = document.getElementById('darkModeToggle');
 const shortcutsButton = document.getElementById('shortcutsButton');
 const shortcutsModal = document.getElementById('shortcutsModal');
 const closeShortcuts = document.getElementById('closeShortcuts');
+const uploadProgress = document.getElementById('uploadProgress');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
 
 // Chat elements
 const startChatButton = document.getElementById('startChatButton');
@@ -162,7 +165,20 @@ generateButton.addEventListener('click', async function() {
     });
     
     hideAll();
-    loading.classList.remove('hidden');
+    
+    // Show upload progress
+    uploadProgress.classList.remove('hidden');
+    progressBar.style.width = '0%';
+    progressText.textContent = 'Uploading files...';
+    
+    // Simulate progress (since we can't get real upload progress easily)
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += 10;
+        if (progress <= 90) {
+            progressBar.style.width = progress + '%';
+        }
+    }, 200);
     
     try {
         const response = await fetch('http://localhost:5000/api/summarize', {
@@ -170,9 +186,15 @@ generateButton.addEventListener('click', async function() {
             body: formData
         });
         
+        // Complete progress
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
+        progressText.textContent = 'Processing...';
+        
         const data = await response.json();
         
         if (response.ok && data.success) {
+            uploadProgress.classList.add('hidden');
             loading.classList.add('hidden');
             
             summaryContent.textContent = data.data.summary;
@@ -185,12 +207,15 @@ generateButton.addEventListener('click', async function() {
             result.classList.remove('hidden');
             
         } else {
+            uploadProgress.classList.add('hidden'); // Hide progress
             loading.classList.add('hidden');
             showError(data.error || 'Failed to generate summary. Please try again.');
         }
         
     } catch (error) {
         console.error('Error:', error);
+        clearInterval(progressInterval); // Stop progress
+        uploadProgress.classList.add('hidden'); // Hide progress
         loading.classList.add('hidden');
         showError('Could not connect to server. Make sure the backend is running on http://localhost:5000');
     }

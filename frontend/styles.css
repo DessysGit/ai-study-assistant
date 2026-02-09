@@ -1059,3 +1059,50 @@ body.dark-mode .shortcut-item span {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
+
+/* ============================================
+   UPLOAD PROGRESS BAR
+   ============================================ */
+
+.upload-progress {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+body.dark-mode .upload-progress {
+    background: #16213e;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+body.dark-mode .progress-bar-container {
+    background: #1a1a2e;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.progress-text {
+    text-align: center;
+    color: #667eea;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+body.dark-mode .progress-text {
+    color: #b0b0b0;
+}
