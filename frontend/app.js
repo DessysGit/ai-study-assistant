@@ -19,6 +19,9 @@ const summaryLength = document.getElementById('summaryLength');
 const copyButton = document.getElementById('copyButton');
 const exportButton = document.getElementById('exportButton');
 const darkModeToggle = document.getElementById('darkModeToggle');
+const shortcutsButton = document.getElementById('shortcutsButton');
+const shortcutsModal = document.getElementById('shortcutsModal');
+const closeShortcuts = document.getElementById('closeShortcuts');
 
 // Chat elements
 const startChatButton = document.getElementById('startChatButton');
@@ -616,6 +619,63 @@ darkModeToggle.addEventListener('click', function() {
     } else {
         darkModeToggle.textContent = '🌙';
         localStorage.setItem('darkMode', 'disabled');
+    }
+});
+
+// ==================================================
+// KEYBOARD SHORTCUTS
+// ==================================================
+
+// Show shortcuts modal
+shortcutsButton.addEventListener('click', function() {
+    shortcutsModal.classList.remove('hidden');
+});
+
+// Close shortcuts modal
+closeShortcuts.addEventListener('click', function() {
+    shortcutsModal.classList.add('hidden');
+});
+
+// Close on click outside
+shortcutsModal.addEventListener('click', function(e) {
+    if (e.target === shortcutsModal) {
+        shortcutsModal.classList.add('hidden');
+    }
+});
+
+// Global keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl + U: Trigger file upload
+    if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+        fileInput.click();
+    }
+    
+    // Ctrl + Enter: Generate summary
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        if (!generateButton.disabled) {
+            generateButton.click();
+        }
+    }
+    
+    // Ctrl + S: Download summary
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        if (!result.classList.contains('hidden')) {
+            exportButton.click();
+        }
+    }
+    
+    // Ctrl + D: Toggle dark mode
+    if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        darkModeToggle.click();
+    }
+    
+    // Esc: Close modals
+    if (e.key === 'Escape') {
+        shortcutsModal.classList.add('hidden');
     }
 });
 

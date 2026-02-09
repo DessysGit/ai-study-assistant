@@ -12,6 +12,45 @@
     <button id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">
         🌙
     </button>
+
+    <!-- Keyboard shortcuts help -->
+    <button id="shortcutsButton" class="shortcuts-button" title="View keyboard shortcuts">
+        ⌨️
+    </button>
+    
+    <!-- Shortcuts modal (hidden by default) -->
+    <div id="shortcutsModal" class="shortcuts-modal hidden">
+        <div class="shortcuts-content">
+            <h3>⌨️ Keyboard Shortcuts</h3>
+            <div class="shortcuts-list">
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>U</kbd>
+                    <span>Upload file</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+                    <span>Generate summary</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>C</kbd>
+                    <span>Copy summary (when focused)</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                    <span>Download summary</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>D</kbd>
+                    <span>Toggle dark mode</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Esc</kbd>
+                    <span>Close this dialog</span>
+                </div>
+            </div>
+            <button id="closeShortcuts" class="close-shortcuts-btn">Got it!</button>
+        </div>
+    </div>
     
     <!-- Main container for the app -->
     <div class="container">
