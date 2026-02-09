@@ -9,7 +9,7 @@
 </head>
 <body>
     <!-- Dark mode toggle -->
-    <button id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">
+    <button id="darkModeToggle" class="dark-mode-toggle" data-tooltip="Toggle dark mode (Ctrl+D)">
         🌙
     </button>
 
@@ -78,7 +78,7 @@
             </label>
             
             <!-- Generate button -->
-            <button id="generateButton" class="generate-btn" disabled>
+            <button id="generateButton" class="generate-btn" disabled data-tooltip="Or press Ctrl+Enter">
                 Generate Summary
             </button>
         </div>
@@ -113,10 +113,10 @@
                 <button id="printButton" class="export-btn print-btn" title="Print summary">
                     🖨️ Print
                 </button>
-                <button id="copyButton" class="export-btn copy-btn" title="Copy to clipboard">
+                <button id="copyButton" class="export-btn copy-btn" data-tooltip="Copy to clipboard (Ctrl+C)">
                     📋 Copy Summary
                 </button>
-                <button id="exportButton" class="export-btn download-btn" title="Download as text file">
+                <button id="exportButton" class="export-btn download-btn" data-tooltip="Download as .txt file (Ctrl+S)">
                     💾 Download Summary
                 </button>
             </div>

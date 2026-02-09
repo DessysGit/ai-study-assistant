@@ -1106,3 +1106,60 @@ body.dark-mode .progress-bar-container {
 body.dark-mode .progress-text {
     color: #b0b0b0;
 }
+
+/* ============================================
+   ENHANCED TOOLTIPS
+   ============================================ */
+
+/* Tooltip container */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+/* Tooltip text */
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+/* Tooltip arrow */
+[data-tooltip]:after {
+    content: '';
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Show tooltip on hover */
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after {
+    opacity: 1;
+}
+
+body.dark-mode [data-tooltip]:before {
+    background: #667eea;
+}
+
+body.dark-mode [data-tooltip]:after {
+    border-top-color: #667eea;
+}
