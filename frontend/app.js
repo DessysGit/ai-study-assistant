@@ -467,8 +467,39 @@ function displayResults(score, total, percentage) {
     
     // Display score
     let message = '';
-    if (percentage >= 80) {
+    if (percentage === 100) {
+        message = 'PERFECT SCORE! 🏆';
+        // Trigger confetti!
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+        // More confetti after a delay
+        setTimeout(() => {
+            confetti({
+                particleCount: 50,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 }
+            });
+        }, 250);
+        setTimeout(() => {
+            confetti({
+                particleCount: 50,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 }
+            });
+        }, 400);
+    } else if (percentage >= 80) {
         message = 'Excellent work! 🎉';
+        // Small confetti for great scores
+        confetti({
+            particleCount: 30,
+            spread: 50,
+            origin: { y: 0.7 }
+        });
     } else if (percentage >= 60) {
         message = 'Good job! 👍';
     } else {
