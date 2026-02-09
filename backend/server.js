@@ -243,9 +243,11 @@ app.post('/api/summarize', upload.array('files', 10), async (req, res) => {
     }
     
     // Check if we got any text
-    if (!extractedText || extractedText.trim().length === 0) {
-      // Delete the uploaded file since we can't process it
-      await fs.unlink(filePath);
+    if (!combinedText || combinedText.trim().length === 0) {
+      // Delete the uploaded files since we can't process them
+      for (const file of req.files) {
+        await fs.unlink(file.path);
+      }
       
       return res.status(400).json({
         success: false,
@@ -253,7 +255,7 @@ app.post('/api/summarize', upload.array('files', 10), async (req, res) => {
       });
     }
     
-    console.log('Text extracted, length:', extractedText.length, 'characters');
+    console.log('Text combined, length:', combinedText.length, 'characters');
     
     // STEP 2: Send text to Gemini AI for summarization
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -262,7 +264,7 @@ app.post('/api/summarize', upload.array('files', 10), async (req, res) => {
     const prompt = `You are a helpful study assistant. Please provide a clear, concise summary of the following study notes. Focus on the main concepts, key points, and important details. Format the summary with bullet points for easy reading.
 
 Study Notes:
-${extractedText}
+${combinedText}
 
 Summary:`;
     
@@ -403,6 +405,9 @@ app.post('/api/generate-quiz', async (req, res) => {
 
     console.log('Quiz generation request received');
     console.log('Note text length:', noteText.length, 'characters');
+
+    // STEP 1: Send to Gemini AI to generate quiz
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // Send to Gemini AI to generate quiz
     const prompt = `You are a helpful study assistant. Generate a nultiple choice quiz based on the following study notes.
