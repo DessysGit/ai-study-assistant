@@ -197,7 +197,7 @@ generateButton.addEventListener('click', async function() {
             uploadProgress.classList.add('hidden');
             loading.classList.add('hidden');
             
-            summaryContent.textContent = data.data.summary;
+            summaryContent.innerHTML = marked.parse(data.data.summary);
             originalLength.textContent = `Original: ${data.data.originalLength.toLocaleString()} characters`;
             summaryLength.textContent = `Summary: ${data.data.summaryLength.toLocaleString()} characters`;
             
@@ -313,7 +313,7 @@ function addMessageToChat(sender, text) {
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
-    contentDiv.textContent = text;
+    contentDiv.innerHTML = marked.parse(text);
     
     messageDiv.appendChild(senderLabel);
     messageDiv.appendChild(contentDiv);

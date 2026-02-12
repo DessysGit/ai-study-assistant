@@ -1163,3 +1163,79 @@ body.dark-mode [data-tooltip]:before {
 body.dark-mode [data-tooltip]:after {
     border-top-color: #667eea;
 }
+
+/* ============================================
+   MARKDOWN FORMATTING
+   ============================================ */
+
+/* Markdown in summary */
+#summaryContent strong,
+.message-content strong {
+    color: #667eea;
+    font-weight: 700;
+}
+
+body.dark-mode #summaryContent strong,
+body.dark-mode .message-content strong {
+    color: #8b9eff;
+}
+
+#summaryContent ul,
+.message-content ul {
+    margin-left: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#summaryContent li,
+.message-content li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+#summaryContent code,
+.message-content code {
+    background: #f0f0ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #764ba2;
+}
+
+body.dark-mode #summaryContent code,
+body.dark-mode .message-content code {
+    background: #1a1a2e;
+    color: #8b9eff;
+}
+
+#summaryContent h1,
+#summaryContent h2,
+#summaryContent h3 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+body.dark-mode #summaryContent h1,
+body.dark-mode #summaryContent h2,
+body.dark-mode #summaryContent h3 {
+    color: #e0e0e0;
+}
+
+#summaryContent p {
+    margin-bottom: 10px;
+}
+
+#summaryContent blockquote {
+    border-left: 4px solid #667eea;
+    padding-left: 15px;
+    margin: 15px 0;
+    color: #666;
+    font-style: italic;
+}
+
+body.dark-mode #summaryContent blockquote {
+    border-left-color: #8b9eff;
+    color: #b0b0b0;
+}
