@@ -19,18 +19,45 @@ const pdfParse = require('pdf-parse');        // Reads PDF files
 const mammoth = require('mammoth');           // Reads Word (.docx) files
 const officeParser = require('officeparser'); // Reads PowerPoint (.pptx) files
 
-// Simple rate limiting - track requests per IP
+// Simple in-memory rate limiting with automatic cleanup
+// Good for single-instance deployments (Render free tier, etc.)
+
 const requestCounts = new Map();
-const RATE_LIMIT = 50; // Max requests per hour
+const RATE_LIMIT = 50; // Max requests per hour per IP
 const RATE_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
+const CLEANUP_INTERVAL = 5 * 60 * 1000; // Cleanup old entries every 5 minutes
+
+// Cleanup old entries periodically to prevent memory leak
+setInterval(() => {
+    const now = Date.now();
+    let cleanedCount = 0;
+    
+    for (const [ip, userData] of requestCounts.entries()) {
+        // Remove entries older than the rate window
+        if (now > userData.resetTime) {
+            requestCounts.delete(ip);
+            cleanedCount++;
+        }
+    }
+    
+    if (cleanedCount > 0) {
+        console.log(`🧹 Cleaned up ${cleanedCount} old rate limit entries`);
+        console.log(`📊 Active IPs being tracked: ${requestCounts.size}`);
+    }
+}, CLEANUP_INTERVAL);
 
 // Middleware to check rate limits
 function rateLimitMiddleware(req, res, next) {
-    const ip = req.ip || req.connection.remoteAddress;
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const now = Date.now();
     
+    // Get or create user data
     if (!requestCounts.has(ip)) {
-        requestCounts.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+        requestCounts.set(ip, { 
+            count: 1, 
+            resetTime: now + RATE_WINDOW,
+            firstRequest: now
+        });
         return next();
     }
     
@@ -38,20 +65,47 @@ function rateLimitMiddleware(req, res, next) {
     
     // Reset if window expired
     if (now > userData.resetTime) {
-        requestCounts.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+        requestCounts.set(ip, { 
+            count: 1, 
+            resetTime: now + RATE_WINDOW,
+            firstRequest: now
+        });
         return next();
     }
     
     // Check if over limit
     if (userData.count >= RATE_LIMIT) {
+        const resetIn = Math.ceil((userData.resetTime - now) / 1000 / 60); // minutes
+        console.log(`⚠️ Rate limit exceeded for IP: ${ip}`);
         return res.status(429).json({
             success: false,
-            error: 'Too many requests. Please try again later.'
+            error: `Rate limit exceeded. Please try again in ${resetIn} minutes.`,
+            retryAfter: resetIn
         });
     }
     
     // Increment count
     userData.count++;
+    
+    // Optional: Log high usage
+    if (userData.count > RATE_LIMIT * 0.8) {
+        console.log(`📊 IP ${ip} has used ${userData.count}/${RATE_LIMIT} requests`);
+    }
+    
+    next();
+}
+
+// Add rate limit info to response headers
+function addRateLimitHeaders(req, res, next) {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const userData = requestCounts.get(ip);
+    
+    if (userData) {
+        res.setHeader('X-RateLimit-Limit', RATE_LIMIT);
+        res.setHeader('X-RateLimit-Remaining', Math.max(0, RATE_LIMIT - userData.count));
+        res.setHeader('X-RateLimit-Reset', new Date(userData.resetTime).toISOString());
+    }
+    
     next();
 }
 
@@ -85,6 +139,7 @@ app.use(express.urlencoded({ extended: true })); // Parse form data
 
 // Apply rate limiting to all routes
 app.use(rateLimitMiddleware);
+app.use(addRateLimitHeaders);
 
 // Configure File Upload
 // ------------------------------
