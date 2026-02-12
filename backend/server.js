@@ -12,6 +12,7 @@ const multer = require('multer');             // Handles file uploads
 const fs = require('fs').promises;            // File system operations (reading/deleting files)
 const path = require('path');                 // Helps work with file paths
 const { GoogleGenerativeAI } = require('@google/generative-ai'); // Google's Gemini AI
+const Groq = require('groq-sdk'); // Groq AI
 
 // File parsers - these help us read different file types
 const pdfParse = require('pdf-parse');        // Reads PDF files
@@ -64,10 +65,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Initialize Gemini AI
+// Initialize AI Models
 // -----------------------------
-// This creates a connection to Google's AI using your API key
+// Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Groq AI (backup)
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
 
 // Middleware Setup
 // -------------------------
@@ -232,6 +238,59 @@ async function extractTextFromFile(filePath) {
   }
 }
 
+/**
+ * Smart AI function that tries Gemini first, falls back to Groq if quota exceeded
+ * @param {string} prompt - The prompt to send to AI
+ * @returns {Promise<string>} - AI response text
+ */
+async function generateAIResponse(prompt) {
+  // Try Gemini first
+  try {
+    console.log('Trying Gemini AI...');
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    console.log('✅ Gemini succeeded');
+    return response.text();
+  } catch (geminiError) {
+    console.log('⚠️ Gemini failed:', geminiError.message);
+    
+    // Check if it's a quota error
+    if (geminiError.message.includes('quota') || 
+        geminiError.message.includes('429') ||
+        geminiError.message.includes('rate limit')) {
+      
+      console.log('🔄 Quota exceeded, switching to Groq...');
+      
+      // Try Groq as backup
+      try {
+        const groqResponse = await groq.chat.completions.create({
+          messages: [
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          model: "llama-3.3-70b-versatile", // Fast and good quality
+          temperature: 0.7,
+          max_tokens: 2048
+        });
+        
+        console.log('✅ Groq succeeded');
+        return groqResponse.choices[0].message.content;
+        
+      } catch (groqError) {
+        console.error('❌ Groq also failed:', groqError.message);
+        throw new Error('Both AI services are unavailable. Please try again later.');
+      }
+      
+    } else {
+      // Not a quota error, re-throw original error
+      throw geminiError;
+    }
+  }
+}
+
 // API Routes
 // ------------------
 // These are the endpoints that the frontend will call
@@ -296,10 +355,7 @@ app.post('/api/summarize', upload.array('files', 10), async (req, res) => {
     
     console.log('Text combined, length:', combinedText.length, 'characters');
     
-    // STEP 2: Send text to Gemini AI for summarization
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    
-    // Create a prompt for the AI
+    // STEP 2: Send text to AI for summarization (auto-switches between models)
     const prompt = `You are a helpful study assistant. Please provide a clear, concise summary of the following study notes. Focus on the main concepts, key points, and important details. Format the summary with bullet points for easy reading.
 
 Study Notes:
@@ -307,12 +363,9 @@ ${combinedText}
 
 Summary:`;
     
-    // Generate summary using AI
-    console.log('Generating summary with Gemini AI...');
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const summary = response.text();
-    
+    // Generate summary using smart AI function (tries Gemini, falls back to Groq)
+    console.log('Generating summary...');
+    const summary = await generateAIResponse(prompt);
     console.log('Summary generated successfully!');
     
     // STEP 3: Clean up - delete the uploaded file
@@ -380,10 +433,7 @@ app.post('/api/chat', async (req, res) => {
   console.log('Question:', question);
   console.log('Note text length:', noteText.length, 'characters');
 
-  // STEP 1: Send question and context to Gemini AI
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash"});
-
-  // Create a prompt that includes the notes as context
+  // STEP 1: Send question and context to AI (auto-switches between models)
   const prompt = `You are a helpful study assistant. A student has uploaded their study notes and has a question about them.
 
 Study Notes:
@@ -392,21 +442,18 @@ ${noteText}
 Student's Question:
 ${question}
 
-Instructios:
+Instructions:
 - Answer the questions based only on the information in the study notes above
-- If the answer is not in the notes, "I dont see that information in your notes, but..." and provide general help
+- If the answer is not in the notes, say "I don't see that information in your notes, but..." and provide general help
 - Be clear, concise and educational
-- Use examples from the note when relevant
+- Use examples from the notes when relevant
 - Format your response for easy reading
 
 Answer:`;
 
-  // Generate answer using AI
-  console.log('Generating answer with Gemini AI...');
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const answer = response.text();
-
+  // Generate answer using smart AI function (tries Gemini, falls back to Groq)
+  console.log('Generating answer...');
+  const answer = await generateAIResponse(prompt);
   console.log('Answer generated successfully!');
 
   // STEP 2: Send response to frontend
@@ -445,43 +492,38 @@ app.post('/api/generate-quiz', async (req, res) => {
     console.log('Quiz generation request received');
     console.log('Note text length:', noteText.length, 'characters');
 
-    // STEP 1: Send to Gemini AI to generate quiz
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // STEP 1: Send to AI to generate quiz (auto-switches between models)
+    const prompt = `You are a helpful study assistant. Generate a multiple choice quiz based on the following study notes.
 
-    // Send to Gemini AI to generate quiz
-    const prompt = `You are a helpful study assistant. Generate a nultiple choice quiz based on the following study notes.
-    
-    Study Notes:
-    ${noteText}
-    
-    Instructions:
-    - Generate 5 multiple choice questions that test understanding of the key concepts
-    - Each question should have 4 options (A, B, C, D)
-    - Only ONE option should be correct
-    - Questions should cover different topics from the notes
-    - Make questions challenging but fair
-    
-    IMPORTANT: Respond ONLY with valid JSON in this exact format, no markdown, no code blocks, no extra text:
-    
+Study Notes:
+${noteText}
+
+Instructions:
+- Generate 5 multiple choice questions that test understanding of the key concepts
+- Each question should have 4 options (A, B, C, D)
+- Only ONE option should be correct
+- Questions should cover different topics from the notes
+- Make questions challenging but fair
+
+IMPORTANT: Respond ONLY with valid JSON in this exact format, no markdown, no code blocks, no extra text:
+
+{
+  "questions": [
     {
-    "questions": [
-      {
-        "question": "What is the main concept?}",
-        "options": ["Option A", "Option B", "Option C", "Option D"],
-        "correctAnswer": 0
+      "question": "What is the main concept?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0
     }
   ]
-  }
 }
 
-The CorrectAnswer is the index (0, 1, 2, or 3) of the correct option.
+The correctAnswer is the index (0, 1, 2, or 3) of the correct option.
 
 Generate the quiz now:`;
-// Generate quiz using AI
-console.log('Generating quiz with Gemini AI...');
-const result = await model.generateContent(prompt);
-const response = await result.response;
-let quizText = response.text();
+    
+    // Generate quiz using smart AI function (tries Gemini, falls back to Groq)
+    console.log('Generating quiz...');
+    let quizText = await generateAIResponse(prompt);
 
 // Clean up the response - remove markdown code blocks if present
 quizText = quizText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
