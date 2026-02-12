@@ -197,7 +197,11 @@ generateButton.addEventListener('click', async function() {
             uploadProgress.classList.add('hidden');
             loading.classList.add('hidden');
             
-            summaryContent.innerHTML = marked.parse(data.data.summary);
+            // Parse markdown AND sanitize to prevent XSS
+            const rawHTML = marked.parse(data.data.summary);
+            const cleanHTML = DOMPurify.sanitize(rawHTML);
+            summaryContent.innerHTML = cleanHTML;
+
             originalLength.textContent = `Original: ${data.data.originalLength.toLocaleString()} characters`;
             summaryLength.textContent = `Summary: ${data.data.summaryLength.toLocaleString()} characters`;
             
@@ -313,7 +317,10 @@ function addMessageToChat(sender, text) {
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
-    contentDiv.innerHTML = marked.parse(text);
+    // Parse markdown AND sanitize to prevent XSS
+    const rawHTML = marked.parse(text);
+    const cleanHTML = DOMPurify.sanitize(rawHTML);
+    contentDiv.innerHTML = cleanHTML;
     
     messageDiv.appendChild(senderLabel);
     messageDiv.appendChild(contentDiv);
@@ -389,11 +396,15 @@ function displayQuiz(questions) {
         questionDiv.className = 'quiz-question';
         
         // Question number and text
+        // Sanitize question and options
+        const cleanQuestion = DOMPurify.sanitize(q.question);
+        const cleanOptions = q.options.map(opt => DOMPurify.sanitize(opt));
+        
         questionDiv.innerHTML = `
             <div class="question-number">Question ${index + 1} of ${questions.length}</div>
-            <div class="question-text">${q.question}</div>
+            <div class="question-text">${cleanQuestion}</div>
             <div class="quiz-options">
-                ${q.options.map((option, optionIndex) => `
+                ${cleanOptions.map((option, optionIndex) => `
                     <div class="quiz-option" onclick="selectOption(${index}, ${optionIndex})">
                         <input 
                             type="radio" 
@@ -526,13 +537,13 @@ function displayResults(score, total, percentage) {
                 <span class="review-icon">${isCorrect ? '✅' : '❌'}</span>
                 <span class="question-number">Question ${index + 1}</span>
             </div>
-            <div class="review-question-text">${q.question}</div>
+            <div class="review-question-text">${DOMPurify.sanitize(q.question)}</div>
             <div class="review-answer correct-answer">
-                ✓ Correct Answer: ${String.fromCharCode(65 + q.correctAnswer)}. ${q.options[q.correctAnswer]}
+                ✓ Correct Answer: ${String.fromCharCode(65 + q.correctAnswer)}. ${DOMPurify.sanitize(q.options[q.correctAnswer])}
             </div>
             ${!isCorrect ? `
                 <div class="review-answer your-answer">
-                    ✗ Your Answer: ${String.fromCharCode(65 + userAnswer)}. ${q.options[userAnswer]}
+                    ✗ Your Answer: ${String.fromCharCode(65 + userAnswer)}. ${DOMPurify.sanitize(q.options[userAnswer])}
                 </div>
             ` : ''}
         `;
