@@ -18,6 +18,42 @@ const pdfParse = require('pdf-parse');        // Reads PDF files
 const mammoth = require('mammoth');           // Reads Word (.docx) files
 const officeParser = require('officeparser'); // Reads PowerPoint (.pptx) files
 
+// Simple rate limiting - track requests per IP
+const requestCounts = new Map();
+const RATE_LIMIT = 50; // Max requests per hour
+const RATE_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
+
+// Middleware to check rate limits
+function rateLimitMiddleware(req, res, next) {
+    const ip = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+    
+    if (!requestCounts.has(ip)) {
+        requestCounts.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+        return next();
+    }
+    
+    const userData = requestCounts.get(ip);
+    
+    // Reset if window expired
+    if (now > userData.resetTime) {
+        requestCounts.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+        return next();
+    }
+    
+    // Check if over limit
+    if (userData.count >= RATE_LIMIT) {
+        return res.status(429).json({
+            success: false,
+            error: 'Too many requests. Please try again later.'
+        });
+    }
+    
+    // Increment count
+    userData.count++;
+    next();
+}
+
 // Load environment variables
 // -----------------------------------
 // This loads the API key from .env file so we don't expose it in code
@@ -40,6 +76,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.use(cors());                    // Allow cross-origin requests (frontend can talk to backend)
 app.use(express.json());            // Parse JSON data in request body
 app.use(express.urlencoded({ extended: true })); // Parse form data
+
+// Apply rate limiting to all routes
+app.use(rateLimitMiddleware);
 
 // Configure File Upload
 // ------------------------------
